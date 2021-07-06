@@ -71,6 +71,10 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 		return
 	}
 
+	if strings.HasSuffix(target, "/") {
+		eppath += "/"
+	}
+
 	req.URL.Scheme = "http"
 	req.URL.Host = endpoint
 	req.URL.Path = "/" + eppath
