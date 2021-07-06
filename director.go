@@ -100,6 +100,11 @@ func (kd *KubeDirector) Update() {
 			splitDomain := strings.Split(target, "/")
 			newDomains[splitDomain[0]] = struct{}{}
 		}
+		if target, ok := svc.ObjectMeta.Annotations["git.andyleap.dev/singress-target"]; ok {
+			newPaths[target] = fmt.Sprintf("%s.%s:%d", svc.Name, svc.Namespace, svc.Spec.Ports[0].Port)
+			splitDomain := strings.Split(target, "/")
+			newDomains[splitDomain[0]] = struct{}{}
+		}
 	}
 
 	kd.lock.Lock()
