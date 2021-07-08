@@ -75,6 +75,8 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 		eppath += "/"
 	}
 
+	req.Header.Set("X-Forwarded-Proto", req.URL.Scheme)
+
 	req.URL.Scheme = "http"
 	req.URL.Host = endpoint
 	req.URL.Path = "/" + eppath
