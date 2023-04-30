@@ -71,10 +71,6 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 		return
 	}
 
-	if strings.HasSuffix(req.URL.Path, "/") {
-		eppath += "/"
-	}
-
 	req.Header.Set("X-Forwarded-Proto", "https")
 
 	req.URL.Scheme = "http"
