@@ -61,9 +61,9 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 	kd.lock.RLock()
 	defer kd.lock.RUnlock()
 
-	target := path.Join(req.Host, req.URL.Path)
+	target := path.Join(req.Host, req.URL.EscapedPath())
 
-	log.Printf("Lookup %q %q", req.Host, req.URL.Path)
+	log.Printf("Lookup %q %q", req.Host, req.URL.EscapedPath())
 
 	endpoint, eppath := Direct(kd.paths, target)
 	if endpoint == "" {
@@ -75,8 +75,9 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 
 	req.URL.Scheme = "http"
 	req.URL.Host = endpoint
-	req.URL.Path = "/" + eppath
-	req.URL.RawPath = req.URL.EscapedPath()
+	req.URL.Path = ""
+	req.URL.RawPath = ""
+	req.URL.JoinPath(eppath)
 
 	log.Printf("Routing %s to %s", target, req.URL.String())
 
