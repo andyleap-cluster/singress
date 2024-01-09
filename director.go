@@ -76,18 +76,12 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 
 	req.URL.Scheme = "http"
 	req.URL.Host = endpoint
-<<<<<<< Updated upstream
-	req.URL.Path = ""
-	req.URL.RawPath = ""
-	req.URL.JoinPath(eppath)
-=======
 	req.URL.Path = "/" + eppath
 	if req.URL.RawPath != "" {
 		rawtarget := path.Join(req.Host, req.URL.RawPath)
 		_, raweppath := Direct(kd.paths, rawtarget)
 		req.URL.RawPath = "/" + raweppath
 	}
->>>>>>> Stashed changes
 
 	log.Printf("Routing %s to %s", target, req.URL.String())
 
