@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path"
 	"strings"
 	"sync"
 	"time"
@@ -36,19 +35,6 @@ func newKubeDirector() *KubeDirector {
 	return kd
 }
 
-func Direct(paths map[string]string, url string) (endpoint, eppath string) {
-	for url != "" && url != "/" && url != "." {
-		if ep, ok := paths[url]; ok {
-			endpoint = ep
-			return
-		}
-		end := ""
-		url, end = path.Dir(url), path.Base(url)
-		eppath = path.Join(end, eppath)
-	}
-	return "", ""
-}
-
 type KubeDirector struct {
 	kube kubernetes.Interface
 
@@ -61,29 +47,23 @@ func (kd *KubeDirector) Direct(req *http.Request) {
 	kd.lock.RLock()
 	defer kd.lock.RUnlock()
 
-	target := path.Join(req.Host, req.URL.EscapedPath())
+	log.Printf("Lookup %q", req.Host)
 
-	log.Printf("Lookup %q %q", req.Host, req.URL.EscapedPath())
+	host := kd.paths[req.Host]
 
-	endpoint, eppath := Direct(kd.paths, target)
-
-	if endpoint == "" {
+	if host == "" {
 		req.URL = nil
 		return
 	}
 
 	req.Header.Set("X-Forwarded-Proto", "https")
 
-	req.URL.Scheme = "http"
-	req.URL.Host = endpoint
-	req.URL.Path = "/" + eppath
-	if req.URL.RawPath != "" {
-		rawtarget := path.Join(req.Host, req.URL.RawPath)
-		_, raweppath := Direct(kd.paths, rawtarget)
-		req.URL.RawPath = "/" + raweppath
-	}
+	old := req.URL.String()
 
-	log.Printf("Routing %s to %s", target, req.URL.String())
+	req.URL.Scheme = "http"
+	req.URL.Host = host
+
+	log.Printf("Routing %s to %s", old, req.URL.String())
 
 	if _, ok := req.Header["User-Agent"]; !ok {
 		// explicitly disable User-Agent so it's not set to default value
